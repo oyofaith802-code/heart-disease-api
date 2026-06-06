@@ -3,9 +3,8 @@ import requests
 
 st.set_page_config(page_title="Heart Disease Predictor", layout="centered")
 
-st.title("❤️ Heart Disease Risk Analyzer")
+st.title("❤️ Heart Disease Predictor")
 
-# Your deployed FastAPI URL (change if needed)
 url = "https://heart-disease-api-e3dw.onrender.com/predict"
 
 st.header("Patient Information")
@@ -18,7 +17,7 @@ cholestoral = st.number_input("Cholesterol", 100, 600, 200)
 fasting_blood_sugar = st.selectbox("Fasting Blood Sugar", [0, 1])
 
 Max_heart_rate = st.number_input("Max Heart Rate", 50, 250, 150)
-exercise_induced_angina = st.selectbox("Exercise Induced Angina", [0, 1])
+exercise_induced_angina = st.selectbox("Exercise Angina", [0, 1])
 oldpeak = st.number_input("Oldpeak", 0.0, 10.0, 1.0)
 
 chest_pain_type = st.selectbox(
@@ -31,10 +30,7 @@ rest_ecg = st.selectbox(
     ["Normal", "ST-T wave abnormality"]
 )
 
-slope = st.selectbox(
-    "Slope",
-    ["Flat", "Upsloping"]
-)
+slope = st.selectbox("Slope", ["Flat", "Upsloping"])
 
 vessels = st.selectbox(
     "Vessels Colored by Fluoroscopy",
@@ -46,10 +42,10 @@ thalassemia = st.selectbox(
     ["No", "Normal", "Reversable Defect"]
 )
 
+def encode(val, options):
+    return [1 if val == opt else 0 for opt in options]
 
-# ===============================
-# PREDICTION BUTTON
-# ===============================
+
 if st.button("Predict Risk"):
 
     data = {
@@ -89,9 +85,6 @@ if st.button("Predict Risk"):
             result = res.json()
 
             prediction = result["prediction"]
-            risk = result["risk_percentage"]
-
-            st.subheader(f"Risk Score: {risk}%")
 
             if prediction == 0:
                 st.success("Low Risk 😌")
@@ -99,7 +92,7 @@ if st.button("Predict Risk"):
                 st.error("High Risk ⚠️")
 
         else:
-            st.error(f"API Error: {res.text}")
+            st.error("API Error: Something went wrong")
 
-    except Exception as e:
-        st.error(f"Request Failed: {e}")
+    except Exception:
+        st.error("Request failed: check internet or API")
