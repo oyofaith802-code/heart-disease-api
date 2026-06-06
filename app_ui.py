@@ -1,67 +1,83 @@
 import streamlit as st
 import requests
 
-# PAGE CONFIG
-st.set_page_config(
-    page_title="Heart Disease Predictor",
-    page_icon="❤️",
-    layout="centered"
-)
+st.set_page_config(page_title="Heart Disease Predictor", layout="centered")
 
-# TITLE
-st.title("❤️ Heart Disease Risk Prediction App")
-st.write("Enter patient details below to predict risk level.")
+st.title("❤️ Heart Disease Risk Predictor")
 
 url = "https://heart-disease-api-e3dw.onrender.com/predict"
 
-# INPUT UI (BETTER LAYOUT)
-col1, col2 = st.columns(2)
+st.header("Patient Details")
 
-with col1:
-    age = st.number_input("Age", 1, 120, 50)
-    sex = st.selectbox("Sex", [0, 1])
-    chest_pain_type = st.selectbox("Chest Pain Type", [0, 1, 2, 3])
-    resting_bp = st.number_input("Resting Blood Pressure", 50, 250, 120)
-    chol = st.number_input("Cholesterol", 100, 600, 200)
-    fasting_bs = st.selectbox("Fasting Blood Sugar", [0, 1])
+age = st.number_input("Age", 1, 120, 50)
+sex = st.selectbox("Sex", [0, 1])
 
-with col2:
-    rest_ecg = st.selectbox("Rest ECG", [0, 1, 2])
-    max_hr = st.number_input("Max Heart Rate", 60, 220, 150)
-    exercise_angina = st.selectbox("Exercise Induced Angina", [0, 1])
-    oldpeak = st.number_input("Oldpeak", 0.0, 10.0, 1.0)
-    slope = st.selectbox("Slope", [0, 1, 2])
-    vessels = st.selectbox("Vessels", [0, 1, 2, 3])
-    thal = st.selectbox("Thalassemia", [0, 1, 2])
+resting_blood_pressure = st.number_input("Resting Blood Pressure", 50, 300, 130)
+cholestoral = st.number_input("Cholesterol", 100, 600, 200)
+fasting_blood_sugar = st.selectbox("Fasting Blood Sugar (>120 mg/dl)", [0, 1])
 
-# BUTTON
-if st.button("🔍 Predict Risk"):
+Max_heart_rate = st.number_input("Max Heart Rate", 50, 250, 150)
+exercise_induced_angina = st.selectbox("Exercise Angina", [0, 1])
+oldpeak = st.number_input("Oldpeak", 0.0, 10.0, 1.0)
 
+chest_pain_type = st.selectbox(
+    "Chest Pain Type",
+    ["Typical angina", "Atypical angina", "Non-anginal pain"]
+)
+
+rest_ecg = st.selectbox(
+    "Rest ECG",
+    ["Normal", "ST-T wave abnormality"]
+)
+
+slope = st.selectbox("Slope", ["Flat", "Upsloping"])
+vessels = st.selectbox("Vessels Colored", ["Zero", "One", "Two", "Three"])
+thalassemia = st.selectbox(
+    "Thalassemia",
+    ["No", "Normal", "Reversable Defect"]
+)
+
+def encode(val, options):
+    return [1 if val == opt else 0 for opt in options]
+
+if st.button("Predict Risk"):
+    
     data = {
         "age": age,
         "sex": sex,
-        "chest_pain_type": chest_pain_type,
-        "resting_blood_pressure": resting_bp,
-        "cholestoral": chol,
-        "fasting_blood_sugar": fasting_bs,
-        "rest_ecg": rest_ecg,
-        "max_heart_rate": max_hr,
-        "exercise_induced_angina": exercise_angina,
+        "resting_blood_pressure": resting_blood_pressure,
+        "cholestoral": cholestoral,
+        "fasting_blood_sugar": fasting_blood_sugar,
+        "Max_heart_rate": Max_heart_rate,
+        "exercise_induced_angina": exercise_induced_angina,
         "oldpeak": oldpeak,
-        "slope": slope,
-        "vessels": vessels,
-        "thalassemia": thal
+
+        "chest_pain_type_Atypical_angina": encode(chest_pain_type, ["Atypical angina"])[0],
+        "chest_pain_type_Non_anginal_pain": encode(chest_pain_type, ["Non-anginal pain"])[0],
+        "chest_pain_type_Typical_angina": encode(chest_pain_type, ["Typical angina"])[0],
+
+        "rest_ecg_Normal": encode(rest_ecg, ["Normal"])[0],
+        "rest_ecg_ST_T_wave_abnormality": encode(rest_ecg, ["ST-T wave abnormality"])[0],
+
+        "slope_Flat": encode(slope, ["Flat"])[0],
+        "slope_Upsloping": encode(slope, ["Upsloping"])[0],
+
+        "vessels_colored_by_flourosopy_One": encode(vessels, ["One"])[0],
+        "vessels_colored_by_flourosopy_Two": encode(vessels, ["Two"])[0],
+        "vessels_colored_by_flourosopy_Three": encode(vessels, ["Three"])[0],
+        "vessels_colored_by_flourosopy_Zero": encode(vessels, ["Zero"])[0],
+
+        "thalassemia_No": encode(thalassemia, ["No"])[0],
+        "thalassemia_Normal": encode(thalassemia, ["Normal"])[0],
+        "thalassemia_Reversable_Defect": encode(thalassemia, ["Reversable Defect"])[0],
     }
 
-    with st.spinner("Predicting..."):
-        res = requests.post(url, json=data)
+    res = requests.post(url, json=data)
 
-    result = res.json()
+    if res.status_code == 200:
+        result = res.json()
+        prediction = result["prediction"]
 
-    # RESULT DISPLAY
-    st.subheader("🧾 Result")
+        risk = "Low Risk 😌" if prediction == 0 else "High Risk ⚠️"
 
-    if result["prediction"] == 1:
-        st.error("⚠️ High Risk of Heart Disease")
-    else:
-        st.success("✅ Low Risk of Heart Disease")
+        st.subheader(f"Result: {risk}")
