@@ -3,18 +3,41 @@ import requests
 
 st.set_page_config(page_title="Heart Disease Predictor", layout="centered")
 
-st.title("❤️ Heart Disease Risk Predictor")
+st.title("❤️ Heart Disease Risk Analyzer")
 
 url = "https://heart-disease-api-e3dw.onrender.com/predict"
 
-st.header("Patient Details")
+st.header("Patient Information")
 
 age = st.number_input("Age", 1, 120, 50)
-sex = st.selectbox("Sex", [0, 1])
+sex = st.selectbox("Sex (0 = Female, 1 = Male)", [0, 1])
 
 resting_blood_pressure = st.number_input("Resting Blood Pressure", 50, 300, 130)
 cholestoral = st.number_input("Cholesterol", 100, 600, 200)
-fasting_blood_sugar = st.selectbox("Fasting Blood Sugar (>120 mg/dl)", [0, 1])
+fasting_blood_sugar = st.selectbox("Fasting Blood Sugar", [0, 1])
+
+Max_heart_rate = st.number_input("Max Heart Rate", 50, 250, 150)
+exercise_induced_angina = st.selectbox("Exercise Induced Angina", [0, 1])
+oldpeak = st.number_input("Oldpeak", 0.0, 10.0, 1.0)
+
+chest_pain_t…
+[10:46 AM, 6/6/2026] Enams: import streamlit as st
+import requests
+
+st.set_page_config(page_title="Heart Disease Predictor", layout="centered")
+
+st.title("❤️ Heart Disease Risk Analyzer")
+
+url = "https://heart-disease-api-e3dw.onrender.com/predict"
+
+st.header("Patient Information")
+
+age = st.number_input("Age", 1, 120, 50)
+sex = st.selectbox("Sex (0 = Female, 1 = Male)", [0, 1])
+
+resting_blood_pressure = st.number_input("Resting Blood Pressure", 50, 300, 130)
+cholestoral = st.number_input("Cholesterol", 100, 600, 200)
+fasting_blood_sugar = st.selectbox("Fasting Blood Sugar", [0, 1])
 
 Max_heart_rate = st.number_input("Max Heart Rate", 50, 250, 150)
 exercise_induced_angina = st.selectbox("Exercise Angina", [0, 1])
@@ -31,17 +54,24 @@ rest_ecg = st.selectbox(
 )
 
 slope = st.selectbox("Slope", ["Flat", "Upsloping"])
-vessels = st.selectbox("Vessels Colored", ["Zero", "One", "Two", "Three"])
+
+vessels = st.selectbox(
+    "Vessels Colored by Fluoroscopy",
+    ["Zero", "One", "Two", "Three"]
+)
+
 thalassemia = st.selectbox(
     "Thalassemia",
     ["No", "Normal", "Reversable Defect"]
 )
 
+
 def encode(val, options):
     return [1 if val == opt else 0 for opt in options]
 
+
 if st.button("Predict Risk"):
-    
+
     data = {
         "age": age,
         "sex": sex,
@@ -76,8 +106,13 @@ if st.button("Predict Risk"):
 
     if res.status_code == 200:
         result = res.json()
+
         prediction = result["prediction"]
+        risk = result["risk_percentage"]
 
-        risk = "Low Risk 😌" if prediction == 0 else "High Risk ⚠️"
+        st.subheader(f"Risk Score: {risk}%")
 
-        st.subheader(f"Result: {risk}")
+        if prediction == 0:
+            st.success("Low Risk 😌")
+        else:
+            st.error("High Risk ⚠️")
